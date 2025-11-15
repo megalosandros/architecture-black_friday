@@ -197,7 +197,7 @@ services:
         echo 'Shards added to mongos.'
       "
 
-  # Включение шардирования и шардирование коллекции
+  # Создание коллекции и включение шардирования
   shard_collections:
     image: mongo:latest
     depends_on:
