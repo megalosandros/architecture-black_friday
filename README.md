@@ -4,7 +4,7 @@
 
 1. [Первый вариант шардирование](schemas/schema-v1-sharding.drawio)
 2. [Второй вариант плюс репликация](schemas/schema-v2-replication.drawio)
-3. [Третий вариант плюс кэширование](schemas/schema-v2-caching.drawio)
+3. [Третий вариант плюс кэширование](schemas/schema-v3-caching.drawio)
 
 ## Задание 2. Шардирование
 
@@ -18,35 +18,14 @@
 
 [Инструкция по запуску четвертого задания](sharding-repl-cache/README.md)
 
+## Задание 5. Service Discovery и балансировка с API Gateway
 
-Запускаем mongodb и приложение
+[Четверый вариант схемы плюс масштабирование сайта](schemas/schema-v4-scaling.drawio)
 
-```shell
-docker compose up -d
-```
+## Задание 6. CDN
 
-Заполняем mongodb данными
+[Пятый вариант схемы плюс сервис CDN](schemas/schema-v5-cdn.drawio)
 
-```shell
-./scripts/mongo-init.sh
-```
+### Финальная схема
 
-## Как проверить
-
-### Если вы запускаете проект на локальной машине
-
-Откройте в браузере http://localhost:8080
-
-### Если вы запускаете проект на предоставленной виртуальной машине
-
-Узнать белый ip виртуальной машины
-
-```shell
-curl --silent http://ifconfig.me
-```
-
-Откройте в браузере http://<ip виртуальной машины>:8080
-
-## Доступные эндпоинты
-
-Список доступных эндпоинтов, swagger http://<ip виртуальной машины>:8080/docs
+![Финальная схема](architecture-schema.png)
