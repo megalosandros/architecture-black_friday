@@ -54,7 +54,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="0XQl7cUpm3OrMvSl4ZXE-11" value="Replicaset" style="swimlane;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+        <mxCell id="0XQl7cUpm3OrMvSl4ZXE-11" value="Шард-1 ReplicaSet (shard1)" style="swimlane;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
           <mxGeometry x="160" y="320" width="200" height="270" as="geometry" />
         </mxCell>
         <mxCell id="0XQl7cUpm3OrMvSl4ZXE-12" value="Primary&lt;div&gt;shard1-1&lt;/div&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;gradientColor=#97d077;" vertex="1" parent="0XQl7cUpm3OrMvSl4ZXE-11">
@@ -78,7 +78,7 @@
             <mxPoint x="-50" y="345" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="0XQl7cUpm3OrMvSl4ZXE-17" value="Replicaset" style="swimlane;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
+        <mxCell id="0XQl7cUpm3OrMvSl4ZXE-17" value="Шард-2 ReplicaSet (shard2)" style="swimlane;whiteSpace=wrap;html=1;rounded=1;" vertex="1" parent="1">
           <mxGeometry x="520" y="320" width="200" height="270" as="geometry" />
         </mxCell>
         <mxCell id="0XQl7cUpm3OrMvSl4ZXE-18" value="Primary&lt;div&gt;shard2-1&lt;/div&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;gradientColor=#97d077;" vertex="1" parent="0XQl7cUpm3OrMvSl4ZXE-17">
