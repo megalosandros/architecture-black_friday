@@ -1,0 +1,385 @@
+name: sharding-repl-cache
+services:
+  # Сервер конфигурации (одиночный Replica Set)
+  configSrv:
+    image: mongo:latest
+    container_name: configSrv
+    restart: always
+    ports:
+      - "27017:27017"
+    networks:
+      - app-network
+    volumes:
+      - config-data:/data/db
+    command:
+      [
+        "--configsvr",
+        "--replSet",
+        "config_server",
+        "--bind_ip_all",
+        "--port",
+        "27017"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27017", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # Инициализация сервера конфигурации configSrv
+  config_init:
+    image: mongo:latest
+    depends_on:
+      configSrv:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Initializing config server...' &&
+        mongosh --host configSrv:27017 --eval '
+          rs.initiate({
+            _id: \"config_server\",
+            configsvr: true,
+            members: [
+              { _id: 0, host: \"configSrv:27017\" }
+            ]
+          });
+        ' &&
+        echo 'Config server initialized.'
+      "
+
+  # Роутер (mongos)
+  mongos_router:
+    image: mongo:latest
+    container_name: mongos_router
+    restart: always
+    ports:
+      - "27020:27020"
+    networks:
+      - app-network
+    command:
+      [
+        "mongos",
+        "--configdb",
+        "config_server/configSrv:27017",
+        "--bind_ip_all",
+        "--port",
+        "27020"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27020", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      config_init:
+        condition: service_completed_successfully
+
+  # Шард 1
+  shard1-1:
+    image: mongo:latest
+    container_name: shard1-1
+    restart: always
+    # ports:
+    #   - "27018:27018"
+    networks:
+      - app-network
+    volumes:
+      - shard1-1-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard1",
+        "--bind_ip_all",
+        "--port",
+        "27018"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27018", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  shard1-2:
+    image: mongo:latest
+    container_name: shard1-2
+    restart: always
+    # ports:
+    #   - "27018:27018"
+    networks:
+      - app-network
+    volumes:
+      - shard1-2-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard1",
+        "--bind_ip_all",
+        "--port",
+        "27018"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27018", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  shard1-3:
+    image: mongo:latest
+    container_name: shard1-3
+    restart: always
+    # ports:
+    #   - "27018:27018"
+    networks:
+      - app-network
+    volumes:
+      - shard1-3-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard1",
+        "--bind_ip_all",
+        "--port",
+        "27018"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27018", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # Инициализация shard1
+  shard1_init:
+    image: mongo:latest
+    depends_on:
+      shard1-1:
+        condition: service_healthy
+      shard1-2:
+        condition: service_healthy
+      shard1-3:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Initializing shard1...' &&
+        mongosh --host shard1-1:27018 --eval '
+          rs.initiate({
+            _id: \"shard1\",
+            members: [
+              { _id: 0, host: \"shard1-1:27018\", priority: 2 },
+              { _id: 1, host: \"shard1-2:27018\", priority: 1 },
+              { _id: 2, host: \"shard1-3:27018\", priority: 1 }
+            ]
+          });
+        ' &&
+        echo 'Shard1 initialized.'
+      "
+
+  # Шард 2
+  shard2-1:
+    image: mongo:latest
+    container_name: shard2-1
+    restart: always
+    # ports:
+    #   - "27019:27019"
+    networks:
+      - app-network
+    volumes:
+      - shard2-1-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard2",
+        "--bind_ip_all",
+        "--port",
+        "27019"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27019", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  shard2-2:
+    image: mongo:latest
+    container_name: shard2-2
+    restart: always
+    # ports:
+    #   - "27019:27019"
+    networks:
+      - app-network
+    volumes:
+      - shard2-2-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard2",
+        "--bind_ip_all",
+        "--port",
+        "27019"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27019", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  shard2-3:
+    image: mongo:latest
+    container_name: shard2-3
+    restart: always
+    # ports:
+    #   - "27019:27019"
+    networks:
+      - app-network
+    volumes:
+      - shard2-3-data:/data/db
+    command:
+      [
+        "--shardsvr",
+        "--replSet",
+        "shard2",
+        "--bind_ip_all",
+        "--port",
+        "27019"
+      ]
+    healthcheck:
+      test: ["CMD", "mongosh", "--port", "27019", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # Инициализация shard2
+  shard2_init:
+    image: mongo:latest
+    depends_on:
+      shard2-1:
+        condition: service_healthy
+      shard2-2:
+        condition: service_healthy
+      shard2-3:
+        condition: service_healthy
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Initializing shard2...' &&
+        mongosh --host shard2-1:27019 --eval '
+          rs.initiate({
+            _id: \"shard2\",
+            members: [
+              { _id: 0, host: \"shard2-1:27019\", priority: 2 },
+              { _id: 1, host: \"shard2-2:27019\", priority: 1 },
+              { _id: 2, host: \"shard2-3:27019\", priority: 1 }
+            ]
+          });
+        ' &&
+        echo 'Shard2 initialized.'
+      "
+
+    # Добавление шардов в mongos
+  shards_add:
+    image: mongo:latest
+    depends_on:
+      mongos_router:
+        condition: service_healthy
+      shard1_init:
+        condition: service_completed_successfully
+      shard2_init:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Adding shards to mongos...' &&
+        mongosh --host mongos_router:27020 --eval '
+          sh.addShard(\"shard1/shard1-1:27018,shard1-2:27018,shard1-3:27018\");
+          sh.addShard(\"shard2/shard2-1:27019,shard2-2:27019,shard2-3:27019\");
+        ' &&
+        echo 'Shards added to mongos.'
+      "
+
+  # Создание коллекции и включение шардирования
+  shard_collections:
+    image: mongo:latest
+    depends_on:
+      shards_add:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+    command: >
+      sh -c "
+        echo 'Enabling sharding and sharding collection...' &&
+        mongosh --host mongos_router:27020 --eval '
+          db = db.getSiblingDB(\"somedb\");
+          db.createCollection(\"helloDoc\");
+          sh.enableSharding(\"somedb\");
+          sh.shardCollection(\"somedb.helloDoc\", { \"name\": \"hashed\" });
+        ' &&
+        echo 'Sharding enabled for somedb.helloDoc.'
+      "
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports: 
+      - "6379:6379"
+    networks:
+      - app-network
+    volumes: 
+      - "redis-data:/data"
+    command: ["redis-server","--appendonly","yes"]
+    healthcheck:
+      test: ["CMD","redis-cli","ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 5s
+
+  # pymongo-api
+  pymongo_api:
+    container_name: pymongo_api
+    build:
+      context: api_app
+      dockerfile: Dockerfile
+    depends_on:
+      shard_collections:
+        condition: service_completed_successfully    
+    ports:
+      - "8080:8080"
+    environment:
+      MONGODB_URL: "mongodb://mongos_router:27020"
+      MONGODB_DATABASE_NAME: "somedb"
+      REDIS_URL: "redis://redis:6379"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  config-data:
+  shard1-1-data:
+  shard1-2-data:
+  shard1-3-data:
+  shard2-1-data:
+  shard2-2-data:
+  shard2-3-data:
+  redis-data:
